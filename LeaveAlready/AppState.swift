@@ -9,6 +9,7 @@ class AppState: ObservableObject {
     @Published var showSettings = false
 
     private var cancellables = Set<AnyCancellable>()
+    private var lastRefreshTime: Date?
 
     init() {
         // When location updates, find nearest route
@@ -32,6 +33,7 @@ class AppState: ObservableObject {
     }
 
     func refresh() {
+        lastRefreshTime = Date()
         locationManager.requestLocation()
 
         if let route = activeRoute {
@@ -39,6 +41,16 @@ class AppState: ObservableObject {
                 await transitService.fetchDepartures(for: route)
             }
         }
+    }
+
+    /// Refreshes only if 30+ seconds have passed since the last refresh
+    func refreshIfNeeded() {
+        let threshold: TimeInterval = 30
+        if let lastRefresh = lastRefreshTime,
+           Date().timeIntervalSince(lastRefresh) < threshold {
+            return
+        }
+        refresh()
     }
 
     func fetchDepartures() {
