@@ -15,9 +15,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "A6000001"
-               BuildableName = "Leave.app"
-               BlueprintName = "Leave"
-               ReferencedContainer = "container:Leave.xcodeproj">
+               BuildableName = "LeaveAlready.app"
+               BlueprintName = "LeaveAlready"
+               ReferencedContainer = "container:LeaveAlready.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -44,9 +44,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "A6000001"
-            BuildableName = "Leave.app"
-            BlueprintName = "Leave"
-            ReferencedContainer = "container:Leave.xcodeproj">
+            BuildableName = "LeaveAlready.app"
+            BlueprintName = "LeaveAlready"
+            ReferencedContainer = "container:LeaveAlready.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </LaunchAction>
@@ -61,9 +61,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "A6000001"
-            BuildableName = "Leave.app"
-            BlueprintName = "Leave"
-            ReferencedContainer = "container:Leave.xcodeproj">
+            BuildableName = "LeaveAlready.app"
+            BlueprintName = "LeaveAlready"
+            ReferencedContainer = "container:LeaveAlready.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>

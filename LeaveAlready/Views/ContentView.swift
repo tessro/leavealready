@@ -31,7 +31,7 @@ struct SetupPromptView: View {
                 .font(.system(size: 80))
                 .foregroundColor(.blue)
 
-            Text("Leave")
+            Text("Leave Already")
                 .font(.system(size: 48, weight: .bold, design: .rounded))
 
             Text("Set up your commute")

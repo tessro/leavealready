@@ -1,20 +1,20 @@
-# Leave iOS App - Build & Deploy
+# Leave Already iOS App - Build & Deploy
 #
 # Required env vars (set via Mise or export):
 #   TEAM_ID     - Apple Developer Team ID
-#   BUNDLE_ID   - App bundle identifier (e.g., com.yourname.Leave)
+#   BUNDLE_ID   - App bundle identifier (e.g., com.yourname.LeaveAlready)
 #   APPLE_ID    - Apple ID email for upload
 #
 # Optional:
 #   KEYCHAIN_PROFILE - notarytool credential name (default: AC_PASSWORD)
 
-PROJECT      := Leave.xcodeproj
-SCHEME       := Leave
+PROJECT      := LeaveAlready.xcodeproj
+SCHEME       := LeaveAlready
 CONFIG       := Release
 BUILD_DIR    := build
-ARCHIVE_PATH := $(BUILD_DIR)/Leave.xcarchive
+ARCHIVE_PATH := $(BUILD_DIR)/LeaveAlready.xcarchive
 EXPORT_PATH  := $(BUILD_DIR)/export
-IPA_PATH     := $(EXPORT_PATH)/Leave.ipa
+IPA_PATH     := $(EXPORT_PATH)/LeaveAlready.ipa
 
 KEYCHAIN_PROFILE ?= AC_PASSWORD
 
@@ -40,7 +40,7 @@ clean:
 
 build: $(ARCHIVE_PATH)
 
-$(ARCHIVE_PATH): $(wildcard Leave/**/*.swift) $(wildcard Leave/**/*.plist)
+$(ARCHIVE_PATH): $(wildcard LeaveAlready/**/*.swift) $(wildcard LeaveAlready/**/*.plist)
 	@echo "==> Building archive..."
 	@test -n "$(TEAM_ID)" || (echo "Error: TEAM_ID not set" && exit 1)
 	@test -n "$(BUNDLE_ID)" || (echo "Error: BUNDLE_ID not set" && exit 1)

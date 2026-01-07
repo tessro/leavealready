@@ -1,4 +1,4 @@
-# Leave
+# Leave Already
 
 A minimal iOS app that shows upcoming train departures for your commute. Automatically detects whether you're at home or work and shows departures in the right direction.
 
@@ -35,7 +35,7 @@ You'll need stop codes for your origin and destination stations.
 
 ### 3. Configure in App
 
-1. Open Leave app
+1. Open Leave Already app
 2. Tap "Get Started" or gear icon
 3. Enter your 511.org API key
 4. Add a route with:
@@ -55,17 +55,17 @@ You'll need stop codes for your origin and destination stations.
 
 ### Step 1: Configure Signing
 
-Edit `Leave.xcodeproj/project.pbxproj` and update:
+Edit `LeaveAlready.xcodeproj/project.pbxproj` and update:
 - `DEVELOPMENT_TEAM` = Your Team ID (find in Apple Developer portal)
-- `PRODUCT_BUNDLE_IDENTIFIER` = Your unique bundle ID (e.g., `com.yourname.Leave`)
+- `PRODUCT_BUNDLE_IDENTIFIER` = Your unique bundle ID (e.g., `com.yourname.LeaveAlready`)
 
 Or set via command line:
 ```bash
-xcodebuild -project Leave.xcodeproj \
-  -scheme Leave \
+xcodebuild -project LeaveAlready.xcodeproj \
+  -scheme LeaveAlready \
   -configuration Release \
   DEVELOPMENT_TEAM="YOUR_TEAM_ID" \
-  PRODUCT_BUNDLE_IDENTIFIER="com.yourname.Leave"
+  PRODUCT_BUNDLE_IDENTIFIER="com.yourname.LeaveAlready"
 ```
 
 ### Step 2: Create App in App Store Connect
@@ -74,7 +74,7 @@ xcodebuild -project Leave.xcodeproj \
 2. My Apps → + → New App
 3. Fill in:
    - Platform: iOS
-   - Name: Leave (or your preferred name)
+   - Name: Leave Already (or your preferred name)
    - Bundle ID: Match what you set above
    - SKU: Any unique string (e.g., `leave-001`)
 
@@ -82,14 +82,14 @@ xcodebuild -project Leave.xcodeproj \
 
 ```bash
 # Clean build folder
-xcodebuild clean -project Leave.xcodeproj -scheme Leave
+xcodebuild clean -project LeaveAlready.xcodeproj -scheme LeaveAlready
 
 # Build archive
 xcodebuild archive \
-  -project Leave.xcodeproj \
-  -scheme Leave \
+  -project LeaveAlready.xcodeproj \
+  -scheme LeaveAlready \
   -configuration Release \
-  -archivePath build/Leave.xcarchive \
+  -archivePath build/LeaveAlready.xcarchive \
   -destination "generic/platform=iOS" \
   DEVELOPMENT_TEAM="YOUR_TEAM_ID" \
   CODE_SIGN_STYLE=Automatic
@@ -118,7 +118,7 @@ Create `ExportOptions.plist`:
 Export the archive:
 ```bash
 xcodebuild -exportArchive \
-  -archivePath build/Leave.xcarchive \
+  -archivePath build/LeaveAlready.xcarchive \
   -exportPath build/export \
   -exportOptionsPlist ExportOptions.plist
 ```
@@ -128,7 +128,7 @@ xcodebuild -exportArchive \
 Using `altool` (older method):
 ```bash
 xcrun altool --upload-app \
-  -f build/export/Leave.ipa \
+  -f build/export/LeaveAlready.ipa \
   -t ios \
   -u "your@apple.id" \
   -p "@keychain:AC_PASSWORD"
@@ -136,7 +136,7 @@ xcrun altool --upload-app \
 
 Using `notarytool` / Transporter (recommended):
 ```bash
-xcrun notarytool submit build/export/Leave.ipa \
+xcrun notarytool submit build/export/LeaveAlready.ipa \
   --apple-id "your@apple.id" \
   --team-id "YOUR_TEAM_ID" \
   --password "@keychain:AC_PASSWORD"
@@ -159,14 +159,14 @@ Save as `build.sh`:
 set -e
 
 TEAM_ID="YOUR_TEAM_ID"
-BUNDLE_ID="com.yourname.Leave"
+BUNDLE_ID="com.yourname.LeaveAlready"
 
-echo "Building Leave..."
+echo "Building Leave Already..."
 xcodebuild clean archive \
-  -project Leave.xcodeproj \
-  -scheme Leave \
+  -project LeaveAlready.xcodeproj \
+  -scheme LeaveAlready \
   -configuration Release \
-  -archivePath build/Leave.xcarchive \
+  -archivePath build/LeaveAlready.xcarchive \
   -destination "generic/platform=iOS" \
   DEVELOPMENT_TEAM="$TEAM_ID" \
   PRODUCT_BUNDLE_IDENTIFIER="$BUNDLE_ID" \
@@ -174,12 +174,12 @@ xcodebuild clean archive \
 
 echo "Exporting IPA..."
 xcodebuild -exportArchive \
-  -archivePath build/Leave.xcarchive \
+  -archivePath build/LeaveAlready.xcarchive \
   -exportPath build/export \
   -exportOptionsPlist ExportOptions.plist
 
-echo "Done! IPA at build/export/Leave.ipa"
-echo "Upload with: xcrun altool --upload-app -f build/export/Leave.ipa -t ios -u YOUR_APPLE_ID -p @keychain:AC_PASSWORD"
+echo "Done! IPA at build/export/LeaveAlready.ipa"
+echo "Upload with: xcrun altool --upload-app -f build/export/LeaveAlready.ipa -t ios -u YOUR_APPLE_ID -p @keychain:AC_PASSWORD"
 ```
 
 ## App Store Password Setup
