@@ -4,17 +4,33 @@ struct AddRouteView: View {
     @EnvironmentObject var appState: AppState
     @Environment(\.dismiss) var dismiss
 
+    let editingRoute: ConfiguredRoute?
+
     @State private var routeName = ""
     @State private var selectedOperator = BayAreaOperator.bart
-    @State private var lineId = ""
-    @State private var originStopCode = ""
-    @State private var originName = ""
-    @State private var originLat = ""
-    @State private var originLon = ""
-    @State private var destStopCode = ""
-    @State private var destName = ""
-    @State private var destLat = ""
-    @State private var destLon = ""
+    @State private var selectedLine: TransitLine?
+    @State private var originStation: Station?
+    @State private var originSearchText = ""
+    @State private var availableStops: [Station] = []
+    @State private var availableLines: [TransitLine] = []
+    @State private var isLoadingStops = false
+    @State private var isLoadingLines = false
+    @State private var stopsError: String?
+    @State private var linesError: String?
+    @FocusState private var isOriginFocused: Bool
+
+    private let transitService = TransitService()
+
+    init(editingRoute: ConfiguredRoute? = nil) {
+        self.editingRoute = editingRoute
+    }
+
+    private var filteredStops: [Station] {
+        if originSearchText.isEmpty {
+            return availableStops
+        }
+        return availableStops.filter { $0.name.localizedCaseInsensitiveContains(originSearchText) }
+    }
 
     var body: some View {
         Form {
@@ -27,59 +43,103 @@ struct AddRouteView: View {
                         Text(op.displayName).tag(op)
                     }
                 }
-
-                TextField("Line ID (optional)", text: $lineId)
-                    .textInputAutocapitalization(.never)
-                    .autocorrectionDisabled()
+                .onChange(of: selectedOperator) { _, _ in
+                    loadStops()
+                    loadLines()
+                }
             } header: {
                 Text("Route Info")
-            } footer: {
-                Text("Line ID filters departures (e.g., 'BLUE' for BART Blue line)")
             }
 
             Section {
-                TextField("Stop Code", text: $originStopCode)
-                    .keyboardType(.asciiCapable)
-                    .textInputAutocapitalization(.never)
-                    .autocorrectionDisabled()
-
-                TextField("Station Name", text: $originName)
-
-                HStack {
-                    TextField("Latitude", text: $originLat)
-                        .keyboardType(.decimalPad)
-                    TextField("Longitude", text: $originLon)
-                        .keyboardType(.numbersAndPunctuation)
+                if isLoadingLines {
+                    HStack {
+                        ProgressView()
+                        Text("Loading lines...")
+                            .foregroundStyle(.secondary)
+                    }
+                } else if let error = linesError {
+                    Text(error)
+                        .foregroundStyle(.red)
+                    Button("Retry") {
+                        loadLines()
+                    }
+                } else if availableLines.isEmpty {
+                    Text("No lines available")
+                        .foregroundStyle(.secondary)
+                } else {
+                    Picker("Line", selection: $selectedLine) {
+                        Text("All lines").tag(nil as TransitLine?)
+                        ForEach(availableLines) { line in
+                            Text(line.displayName).tag(line as TransitLine?)
+                        }
+                    }
                 }
             } header: {
-                Text("Origin Station (e.g., Home)")
+                Text("Line (optional)")
             } footer: {
-                Text("Find stop codes at 511.org/open-data/transit")
+                Text("Filter departures to a specific line")
             }
 
             Section {
-                TextField("Stop Code", text: $destStopCode)
-                    .keyboardType(.asciiCapable)
-                    .textInputAutocapitalization(.never)
-                    .autocorrectionDisabled()
+                if isLoadingStops {
+                    HStack {
+                        ProgressView()
+                        Text("Loading stations...")
+                            .foregroundStyle(.secondary)
+                    }
+                } else if let error = stopsError {
+                    Text(error)
+                        .foregroundStyle(.red)
+                    Button("Retry") {
+                        loadStops()
+                    }
+                } else if availableStops.isEmpty {
+                    Text("No stations available")
+                        .foregroundStyle(.secondary)
+                } else {
+                    TextField("Search stations...", text: $originSearchText)
+                        .textInputAutocapitalization(.never)
+                        .autocorrectionDisabled()
+                        .focused($isOriginFocused)
 
-                TextField("Station Name", text: $destName)
-
-                HStack {
-                    TextField("Latitude", text: $destLat)
-                        .keyboardType(.decimalPad)
-                    TextField("Longitude", text: $destLon)
-                        .keyboardType(.numbersAndPunctuation)
+                    if let station = originStation, !isOriginFocused {
+                        HStack {
+                            Text(station.name)
+                                .foregroundStyle(.primary)
+                            Spacer()
+                            Image(systemName: "checkmark.circle.fill")
+                                .foregroundStyle(.green)
+                        }
+                    } else {
+                        ForEach(filteredStops.prefix(8)) { stop in
+                            Button(action: {
+                                originStation = stop
+                                originSearchText = stop.name
+                                isOriginFocused = false
+                            }) {
+                                HStack {
+                                    Text(stop.name)
+                                        .foregroundStyle(.primary)
+                                    Spacer()
+                                    if originStation?.id == stop.id {
+                                        Image(systemName: "checkmark")
+                                            .foregroundStyle(.blue)
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             } header: {
-                Text("Destination Station (e.g., Work)")
+                Text("Origin Station")
             }
 
             Section {
                 Button(action: saveRoute) {
                     HStack {
                         Spacer()
-                        Text("Save Route")
+                        Text(editingRoute != nil ? "Update Route" : "Save Route")
                             .font(.headline)
                         Spacer()
                     }
@@ -87,51 +147,91 @@ struct AddRouteView: View {
                 .disabled(!isValid)
             }
         }
-        .navigationTitle("Add Route")
+        .navigationTitle(editingRoute != nil ? "Edit Route" : "Add Route")
         .navigationBarTitleDisplayMode(.inline)
+        .onAppear {
+            if let route = editingRoute {
+                routeName = route.name
+                if let op = BayAreaOperator(rawValue: route.operatorId) {
+                    selectedOperator = op
+                }
+                originStation = route.originStation
+                originSearchText = route.originStation.name
+            }
+            loadStops()
+            loadLines()
+        }
     }
 
     private var isValid: Bool {
-        !routeName.isEmpty &&
-        !originStopCode.isEmpty &&
-        !originName.isEmpty &&
-        Double(originLat) != nil &&
-        Double(originLon) != nil &&
-        !destStopCode.isEmpty &&
-        !destName.isEmpty &&
-        Double(destLat) != nil &&
-        Double(destLon) != nil
+        !routeName.isEmpty && originStation != nil
+    }
+
+    private func loadStops() {
+        isLoadingStops = true
+        stopsError = nil
+        originStation = nil
+        originSearchText = ""
+        availableStops = []
+
+        Task {
+            do {
+                let stops = try await transitService.fetchStops(for: selectedOperator.rawValue)
+                await MainActor.run {
+                    availableStops = stops
+                    isLoadingStops = false
+                }
+            } catch {
+                await MainActor.run {
+                    stopsError = error.localizedDescription
+                    isLoadingStops = false
+                }
+            }
+        }
+    }
+
+    private func loadLines() {
+        isLoadingLines = true
+        linesError = nil
+        selectedLine = nil
+        availableLines = []
+
+        Task {
+            do {
+                let lines = try await transitService.fetchLines(for: selectedOperator.rawValue)
+                await MainActor.run {
+                    availableLines = lines
+                    isLoadingLines = false
+                    // Pre-select line when editing
+                    if let route = editingRoute, !route.lineId.isEmpty {
+                        selectedLine = lines.first { $0.id == route.lineId }
+                    }
+                }
+            } catch {
+                await MainActor.run {
+                    linesError = error.localizedDescription
+                    isLoadingLines = false
+                }
+            }
+        }
     }
 
     private func saveRoute() {
-        guard let oLat = Double(originLat),
-              let oLon = Double(originLon),
-              let dLat = Double(destLat),
-              let dLon = Double(destLon) else { return }
-
-        let origin = Station(
-            id: originStopCode,
-            name: originName,
-            latitude: oLat,
-            longitude: oLon
-        )
-
-        let destination = Station(
-            id: destStopCode,
-            name: destName,
-            latitude: dLat,
-            longitude: dLon
-        )
+        guard let origin = originStation else { return }
 
         let route = ConfiguredRoute(
+            id: editingRoute?.id ?? UUID(),
             name: routeName,
             operatorId: selectedOperator.rawValue,
-            lineId: lineId,
-            originStation: origin,
-            destinationStation: destination
+            lineId: selectedLine?.id ?? "",
+            originStation: origin
         )
 
-        appState.settings.addRoute(route)
+        if editingRoute != nil {
+            appState.settings.updateRoute(route)
+        } else {
+            appState.settings.addRoute(route)
+        }
         dismiss()
     }
 }

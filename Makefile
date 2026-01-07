@@ -51,6 +51,7 @@ $(ARCHIVE_PATH): $(wildcard LeaveAlready/**/*.swift) $(wildcard LeaveAlready/**/
 		-configuration $(CONFIG) \
 		-archivePath $(ARCHIVE_PATH) \
 		-destination "generic/platform=iOS" \
+		-allowProvisioningUpdates \
 		DEVELOPMENT_TEAM="$(TEAM_ID)" \
 		PRODUCT_BUNDLE_IDENTIFIER="$(BUNDLE_ID)" \
 		CODE_SIGN_STYLE=Automatic \
@@ -66,7 +67,7 @@ $(BUILD_DIR)/ExportOptions.plist:
 	@echo '<key>method</key><string>app-store-connect</string>' >> $@
 	@echo '<key>teamID</key><string>$(TEAM_ID)</string>' >> $@
 	@echo '<key>uploadSymbols</key><true/>' >> $@
-	@echo '<key>destination</key><string>upload</string>' >> $@
+	@echo '<key>destination</key><string>export</string>' >> $@
 	@echo '</dict></plist>' >> $@
 
 export: $(IPA_PATH)
@@ -83,12 +84,11 @@ $(IPA_PATH): $(ARCHIVE_PATH) $(BUILD_DIR)/ExportOptions.plist
 upload: $(IPA_PATH)
 	@echo "==> Uploading to TestFlight..."
 	@test -n "$(APPLE_ID)" || (echo "Error: APPLE_ID not set" && exit 1)
-	@test -n "$(TEAM_ID)" || (echo "Error: TEAM_ID not set" && exit 1)
-	xcrun notarytool submit $(IPA_PATH) \
-		--apple-id "$(APPLE_ID)" \
-		--team-id "$(TEAM_ID)" \
-		--keychain-profile "$(KEYCHAIN_PROFILE)" \
-		--wait
+	xcrun altool --upload-app \
+		--type ios \
+		--file $(IPA_PATH) \
+		--username "$(APPLE_ID)" \
+		--password "@keychain:$(KEYCHAIN_PROFILE)"
 	@echo "==> Upload complete!"
 
 deploy: clean build export upload

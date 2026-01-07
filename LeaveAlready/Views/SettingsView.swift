@@ -43,7 +43,11 @@ struct SettingsView: View {
     private var routesSection: some View {
         Section {
             ForEach(appState.settings.routes) { route in
-                RouteRow(route: route)
+                NavigationLink {
+                    AddRouteView(editingRoute: route)
+                } label: {
+                    RouteRow(route: route)
+                }
             }
             .onDelete { indexSet in
                 appState.settings.removeRoute(at: indexSet)
@@ -58,7 +62,7 @@ struct SettingsView: View {
         } header: {
             Text("Routes")
         } footer: {
-            Text("Add your home↔work route. The app will automatically show departures from the nearest station.")
+            Text("Add stations to track. The app will automatically show departures from the nearest one.")
         }
     }
 
@@ -122,9 +126,15 @@ struct RouteRow: View {
             Text(route.name)
                 .font(.headline)
 
-            Text("\(route.originStation.name) ↔ \(route.destinationStation.name)")
-                .font(.subheadline)
-                .foregroundColor(.secondary)
+            HStack(spacing: 4) {
+                Text(route.originStation.name)
+                if !route.lineId.isEmpty {
+                    Text("•")
+                    Text(route.lineId)
+                }
+            }
+            .font(.subheadline)
+            .foregroundColor(.secondary)
         }
         .padding(.vertical, 4)
     }

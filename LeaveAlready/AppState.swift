@@ -5,7 +5,7 @@ class AppState: ObservableObject {
     @Published var settings = SettingsManager.shared
     @Published var locationManager = LocationManager()
     @Published var transitService = TransitService()
-    @Published var activeRoute: ActiveRoute?
+    @Published var activeRoute: ConfiguredRoute?
     @Published var showSettings = false
 
     private var cancellables = Set<AnyCancellable>()

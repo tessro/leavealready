@@ -40,6 +40,12 @@ class SettingsManager: ObservableObject {
         routes.append(route)
     }
 
+    func updateRoute(_ route: ConfiguredRoute) {
+        if let index = routes.firstIndex(where: { $0.id == route.id }) {
+            routes[index] = route
+        }
+    }
+
     func removeRoute(at indexSet: IndexSet) {
         routes.remove(atOffsets: indexSet)
     }

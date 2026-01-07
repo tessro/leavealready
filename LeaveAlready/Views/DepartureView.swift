@@ -40,20 +40,18 @@ struct DepartureView: View {
         }
     }
 
-    private func routeHeader(_ route: ActiveRoute) -> some View {
+    private func routeHeader(_ route: ConfiguredRoute) -> some View {
         VStack(spacing: 8) {
-            Text(route.departureStation.name)
+            Text(route.originStation.name)
                 .font(.system(size: 28, weight: .bold, design: .rounded))
                 .minimumScaleFactor(0.7)
                 .lineLimit(1)
 
-            HStack(spacing: 8) {
-                Image(systemName: "arrow.right")
-                    .font(.caption)
-                Text(route.arrivalStation.name)
+            if !route.lineId.isEmpty {
+                Text(route.lineId)
                     .font(.subheadline)
+                    .foregroundColor(.secondary)
             }
-            .foregroundColor(.secondary)
         }
         .padding(.vertical, 24)
         .frame(maxWidth: .infinity)

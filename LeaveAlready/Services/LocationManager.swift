@@ -27,32 +27,29 @@ class LocationManager: NSObject, ObservableObject {
         locationManager.requestLocation()
     }
 
-    func findNearestRoute(from routes: [ConfiguredRoute]) -> ActiveRoute? {
-        guard let location = currentLocation, !routes.isEmpty else { return nil }
+    func findNearestRoute(from routes: [ConfiguredRoute]) -> ConfiguredRoute? {
+        guard !routes.isEmpty else { return nil }
+
+        // If no location available, return the first route
+        guard let location = currentLocation else {
+            return routes[0]
+        }
 
         var nearestRoute: ConfiguredRoute?
         var nearestDistance: CLLocationDistance = .infinity
-        var isReversed = false
 
         for route in routes {
-            let originDistance = location.distance(from: route.originStation.location)
-            let destDistance = location.distance(from: route.destinationStation.location)
-
-            if originDistance < nearestDistance {
-                nearestDistance = originDistance
-                nearestRoute = route
-                isReversed = false
-            }
-
-            if destDistance < nearestDistance {
-                nearestDistance = destDistance
-                nearestRoute = route
-                isReversed = true
+            if let originLocation = route.originStation.location {
+                let distance = location.distance(from: originLocation)
+                if distance < nearestDistance {
+                    nearestDistance = distance
+                    nearestRoute = route
+                }
             }
         }
 
-        guard let route = nearestRoute else { return nil }
-        return ActiveRoute(route: route, isReversed: isReversed)
+        // If no route with coordinates found, use first route
+        return nearestRoute ?? routes[0]
     }
 }
 
