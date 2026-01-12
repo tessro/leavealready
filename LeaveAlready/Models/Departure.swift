@@ -37,14 +37,48 @@ struct APIResponse: Codable {
 }
 
 struct ServiceDelivery: Codable {
-    let StopMonitoringDelivery: [StopMonitoringDelivery]
+    let StopMonitoringDelivery: [StopMonitoringDeliveryItem]
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+
+        // Handle both single object and array responses from the API
+        if let array = try? container.decode([StopMonitoringDeliveryItem].self, forKey: .StopMonitoringDelivery) {
+            StopMonitoringDelivery = array
+        } else if let single = try? container.decode(StopMonitoringDeliveryItem.self, forKey: .StopMonitoringDelivery) {
+            StopMonitoringDelivery = [single]
+        } else {
+            StopMonitoringDelivery = []
+        }
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case StopMonitoringDelivery
+    }
 }
 
-struct StopMonitoringDelivery: Codable {
-    let MonitoredStopVisit: [MonitoredStopVisit]?
+struct StopMonitoringDeliveryItem: Codable {
+    let MonitoredStopVisit: [MonitoredStopVisitItem]?
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+
+        // Handle both single object and array responses from the API
+        if let array = try? container.decode([MonitoredStopVisitItem].self, forKey: .MonitoredStopVisit) {
+            MonitoredStopVisit = array
+        } else if let single = try? container.decode(MonitoredStopVisitItem.self, forKey: .MonitoredStopVisit) {
+            MonitoredStopVisit = [single]
+        } else {
+            MonitoredStopVisit = nil
+        }
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case MonitoredStopVisit
+    }
 }
 
-struct MonitoredStopVisit: Codable {
+struct MonitoredStopVisitItem: Codable {
     let MonitoredVehicleJourney: MonitoredVehicleJourney
 }
 
